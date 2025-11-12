@@ -5,6 +5,37 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Timekeeper Presentasi</title>
 <style>
+  /* Styling dropdown (opsi select) agar sesuai tema */
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-color: rgba(255,255,255,0.1);
+  color: var(--text);
+  border: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* Saat dropdown dibuka */
+select option {
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+/* Saat opsi di-hover */
+select option:hover {
+  background-color: rgba(0,255,145,0.3);
+  color: #fff;
+}
+
+/* Saat opsi terpilih */
+select:focus option:checked {
+  background-color: var(--primary);
+  color: #000;
+}
   :root {
     --primary: #00ff91;
     --danger: #ff3b3b;
@@ -308,6 +339,7 @@ dashboard.addEventListener("keydown", (e) => {
 
 </body>
 </html>
+
 
 
 
