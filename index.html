@@ -163,7 +163,6 @@
       <button id="exitBtn">Kembali</button>
     </div>
   </div>
-
 <script>
 const dashboard = document.getElementById("dashboard");
 const timerScreen = document.getElementById("timerScreen");
@@ -235,31 +234,38 @@ function formatTime(sec) {
 }
 
 // === Fullscreen ===
-fullscreenBtn.onclick = () => {
+function enterFullscreen() {
   if (!document.fullscreenElement) {
     timerScreen.requestFullscreen();
-    controls.style.display = "none"; // sembunyikan tombol saat fullscreen
+    controls.style.display = "none";
   }
-};
+}
 
-// Kembali (ESC keluar fullscreen)
+function exitFullscreen() {
+  if (document.fullscreenElement) {
+    document.exitFullscreen();
+  }
+}
+
+fullscreenBtn.onclick = enterFullscreen;
 exitBtn.onclick = () => {
   clearInterval(countdown);
   timerScreen.style.display = "none";
   dashboard.style.display = "flex";
-  document.exitFullscreen();
+  exitFullscreen();
 };
 
 // Event keluar fullscreen
 document.addEventListener("fullscreenchange", () => {
   if (!document.fullscreenElement) {
-    controls.style.display = "flex"; // tampilkan tombol kembali & fullscreen lagi
+    controls.style.display = "flex";
   }
 });
 
 // === Keyboard Shortcuts ===
 window.addEventListener("keydown", (e) => {
-  if (timerScreen.style.display !== "flex") return; // ignore kalau masih dashboard
+  if (timerScreen.style.display !== "flex") return; // kalau belum di layar timer, abaikan
+
   if (e.code === "Space") {
     e.preventDefault();
     paused = !paused;
@@ -269,8 +275,20 @@ window.addEventListener("keydown", (e) => {
       bottomText.textContent = "";
     }
   }
+
+  // 🔥 Tambahan: tekan F untuk fullscreen
+  if (e.code === "KeyF") {
+    e.preventDefault();
+    if (!document.fullscreenElement) {
+      enterFullscreen();
+    } else {
+      exitFullscreen();
+    }
+  }
 });
 </script>
 
+
 </body>
 </html>
+
