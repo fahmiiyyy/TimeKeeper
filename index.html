@@ -288,16 +288,26 @@ window.addEventListener("keydown", (e) => {
     }
   }
 
-  // 🔥 Tekan K untuk kembali ke dashboard
-  if (e.code === "KeyK") {
+  // 🔥 Tekan K untuk kembali ke dashboard — tapi cuma kalau TIDAK fullscreen
+  if (e.code === "KeyK" && !document.fullscreenElement) {
     e.preventDefault();
     goBackToDashboard();
+  }
+});
+
+// === Tekan Enter di dashboard untuk langsung mulai ===
+dashboard.addEventListener("keydown", (e) => {
+  if (e.code === "Enter") {
+    e.preventDefault();
+    startBtn.click();
   }
 });
 </script>
 
 
+
 </body>
 </html>
+
 
 
