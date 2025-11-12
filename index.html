@@ -247,13 +247,15 @@ function exitFullscreen() {
   }
 }
 
-fullscreenBtn.onclick = enterFullscreen;
-exitBtn.onclick = () => {
+function goBackToDashboard() {
   clearInterval(countdown);
   timerScreen.style.display = "none";
   dashboard.style.display = "flex";
   exitFullscreen();
-};
+}
+
+fullscreenBtn.onclick = enterFullscreen;
+exitBtn.onclick = goBackToDashboard;
 
 // Event keluar fullscreen
 document.addEventListener("fullscreenchange", () => {
@@ -264,7 +266,7 @@ document.addEventListener("fullscreenchange", () => {
 
 // === Keyboard Shortcuts ===
 window.addEventListener("keydown", (e) => {
-  if (timerScreen.style.display !== "flex") return; // kalau belum di layar timer, abaikan
+  if (timerScreen.style.display !== "flex") return; // ignore kalau belum di layar timer
 
   if (e.code === "Space") {
     e.preventDefault();
@@ -276,7 +278,7 @@ window.addEventListener("keydown", (e) => {
     }
   }
 
-  // 🔥 Tambahan: tekan F untuk fullscreen
+  // 🔥 Tekan F untuk toggle fullscreen
   if (e.code === "KeyF") {
     e.preventDefault();
     if (!document.fullscreenElement) {
@@ -285,10 +287,17 @@ window.addEventListener("keydown", (e) => {
       exitFullscreen();
     }
   }
+
+  // 🔥 Tekan K untuk kembali ke dashboard
+  if (e.code === "KeyK") {
+    e.preventDefault();
+    goBackToDashboard();
+  }
 });
 </script>
 
 
 </body>
 </html>
+
 
