@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Timekeeper Presentasi</title>
+<style>
+  :root {
+    --primary: #00ff91;
+    --danger: #ff3b3b;
+    --bg: #0b1120;
+    --text: #ffffff;
+    --muted: #999;
+  }
+
+  body {
+    font-family: "Poppins", sans-serif;
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* DASHBOARD */
+  #dashboard {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 90%;
+    max-width: 500px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.4);
+  }
+
+  h1 {
+    font-size: 26px;
+    margin: 0;
+    color: var(--primary);
+  }
+
+  label {
+    font-weight: 500;
+    color: var(--muted);
+  }
+
+  input, select {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: none;
+    outline: none;
+    margin-top: 5px;
+    font-size: 16px;
+    background: rgba(255,255,255,0.1);
+    color: var(--text);
+  }
+
+  button {
+    margin-top: 16px;
+    padding: 12px;
+    font-size: 18px;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    background: var(--primary);
+    color: #000;
+    transition: 0.2s;
+  }
+  button:hover {
+    transform: scale(1.05);
+  }
+
+  /* TIMER SCREEN */
+  #timerScreen {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    text-align: center;
+  }
+
+  #topText {
+    font-size: 5vw;
+    margin-bottom: 1rem;
+  }
+
+  #timeDisplay {
+    font-size: 20vw; /* DIBESARKAN */
+    font-weight: 700;
+    color: var(--primary);
+    text-shadow: 0 0 40px var(--primary);
+    transition: color 0.3s ease, text-shadow 0.3s ease;
+  }
+
+  #bottomText {
+    font-size: 2.5vw;
+    margin-top: 1rem;
+    color: var(--muted);
+  }
+
+  #controls {
+    position: absolute;
+    bottom: 20px;
+    display: flex;
+    gap: 10px;
+  }
+
+  #controls button {
+    font-size: 18px;
+    padding: 10px 16px;
+  }
+
+  @keyframes flash {
+    0%, 100% { color: var(--danger); text-shadow: 0 0 40px var(--danger); }
+    50% { color: #fff; text-shadow: 0 0 10px #fff; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- DASHBOARD -->
+  <div id="dashboard">
+    <h1>Timekeeper Presentasi</h1>
+    <div>
+      <label for="duration">Durasi Waktu (menit)</label>
+      <select id="duration">
+        <option value="5">5 menit</option>
+        <option value="10">10 menit</option>
+        <option value="15">15 menit</option>
+        <option value="20">20 menit</option>
+        <option value="25">25 menit</option>
+        <option value="30">30 menit</option>
+      </select>
+    </div>
+    <div>
+      <label for="topTextInput">Teks Atas</label>
+      <input type="text" id="topTextInput" placeholder="Misal: Tim A - Presentasi Produk">
+    </div>
+    <div>
+      <label for="bottomTextInput">Teks Bawah</label>
+      <input type="text" id="bottomTextInput" placeholder="Misal: Waktu Tersisa">
+    </div>
+    <button id="startBtn">Mulai Timer</button>
+  </div>
+
+  <!-- TIMER -->
+  <div id="timerScreen">
+    <div id="topText"></div>
+    <div id="timeDisplay">00:00</div>
+    <div id="bottomText"></div>
+
+    <div id="controls">
+      <button id="fullscreenBtn">Full Screen</button>
+      <button id="exitBtn">Kembali</button>
+    </div>
+  </div>
+
+<script>
+const dashboard = document.getElementById("dashboard");
+const timerScreen = document.getElementById("timerScreen");
+const startBtn = document.getElementById("startBtn");
+const fullscreenBtn = document.getElementById("fullscreenBtn");
+const exitBtn = document.getElementById("exitBtn");
+const topText = document.getElementById("topText");
+const bottomText = document.getElementById("bottomText");
+const timeDisplay = document.getElementById("timeDisplay");
+const controls = document.getElementById("controls");
+
+let countdown;
+let totalSeconds = 0;
+let warningShown = false;
+let paused = false;
+
+startBtn.onclick = () => {
+  const mins = parseInt(document.getElementById("duration").value);
+  const topTextVal = document.getElementById("topTextInput").value || "";
+  const bottomTextVal = document.getElementById("bottomTextInput").value || "";
+
+  totalSeconds = mins * 60;
+  topText.textContent = topTextVal;
+  bottomText.textContent = bottomTextVal;
+  timeDisplay.style.color = "var(--primary)";
+  timeDisplay.style.textShadow = "0 0 40px var(--primary)";
+  timeDisplay.textContent = formatTime(totalSeconds);
+  timeDisplay.style.animation = "none";
+  warningShown = false;
+  paused = false;
+
+  // Ganti layar
+  dashboard.style.display = "none";
+  timerScreen.style.display = "flex";
+  controls.style.display = "flex";
+
+  startCountdown();
+};
+
+function startCountdown() {
+  clearInterval(countdown);
+  countdown = setInterval(() => {
+    if (paused) return;
+
+    totalSeconds--;
+    if (totalSeconds <= 0) {
+      clearInterval(countdown);
+      timeDisplay.textContent = "WAKTU HABIS";
+      timeDisplay.style.animation = "flash 1s infinite";
+      bottomText.textContent = "⏰ Silakan akhiri presentasi.";
+      return;
+    }
+
+    // Peringatan merah jika sisa <= 2 menit
+    if (totalSeconds <= 120 && !warningShown) {
+      warningShown = true;
+      timeDisplay.style.color = "var(--danger)";
+      timeDisplay.style.textShadow = "0 0 40px var(--danger)";
+    }
+
+    timeDisplay.textContent = formatTime(totalSeconds);
+  }, 1000);
+}
+
+function formatTime(sec) {
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+}
+
+// === Fullscreen ===
+fullscreenBtn.onclick = () => {
+  if (!document.fullscreenElement) {
+    timerScreen.requestFullscreen();
+    controls.style.display = "none"; // sembunyikan tombol saat fullscreen
+  }
+};
+
+// Kembali (ESC keluar fullscreen)
+exitBtn.onclick = () => {
+  clearInterval(countdown);
+  timerScreen.style.display = "none";
+  dashboard.style.display = "flex";
+  document.exitFullscreen();
+};
+
+// Event keluar fullscreen
+document.addEventListener("fullscreenchange", () => {
+  if (!document.fullscreenElement) {
+    controls.style.display = "flex"; // tampilkan tombol kembali & fullscreen lagi
+  }
+});
+
+// === Keyboard Shortcuts ===
+window.addEventListener("keydown", (e) => {
+  if (timerScreen.style.display !== "flex") return; // ignore kalau masih dashboard
+  if (e.code === "Space") {
+    e.preventDefault();
+    paused = !paused;
+    if (paused) {
+      bottomText.textContent = "⏸ Dihentikan sementara";
+    } else {
+      bottomText.textContent = "";
+    }
+  }
+});
+</script>
+
+</body>
+</html>
