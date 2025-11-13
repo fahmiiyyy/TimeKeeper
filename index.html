@@ -5,37 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Timekeeper Presentasi</title>
 <style>
-  /* Styling dropdown (opsi select) agar sesuai tema */
-select {
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  background-color: rgba(255,255,255,0.1);
-  color: var(--text);
-  border: none;
-  padding: 10px 14px;
-  border-radius: 8px;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-/* Saat dropdown dibuka */
-select option {
-  background-color: var(--bg);
-  color: var(--text);
-}
-
-/* Saat opsi di-hover */
-select option:hover {
-  background-color: rgba(0,255,145,0.3);
-  color: #fff;
-}
-
-/* Saat opsi terpilih */
-select:focus option:checked {
-  background-color: var(--primary);
-  color: #000;
-}
   :root {
     --primary: #00ff91;
     --danger: #ff3b3b;
@@ -81,7 +50,7 @@ select:focus option:checked {
     color: var(--muted);
   }
 
-  input, select {
+  input {
     width: 100%;
     padding: 10px 14px;
     border-radius: 8px;
@@ -125,7 +94,7 @@ select:focus option:checked {
   }
 
   #timeDisplay {
-    font-size: 20vw; /* DIBESARKAN */
+    font-size: 20vw;
     font-weight: 700;
     color: var(--primary);
     text-shadow: 0 0 40px var(--primary);
@@ -145,11 +114,6 @@ select:focus option:checked {
     gap: 10px;
   }
 
-  #controls button {
-    font-size: 18px;
-    padding: 10px 16px;
-  }
-
   @keyframes flash {
     0%, 100% { color: var(--danger); text-shadow: 0 0 40px var(--danger); }
     50% { color: #fff; text-shadow: 0 0 10px #fff; }
@@ -161,25 +125,22 @@ select:focus option:checked {
   <!-- DASHBOARD -->
   <div id="dashboard">
     <h1>Timekeeper Presentasi</h1>
+
     <div>
       <label for="duration">Durasi Waktu (menit)</label>
-      <select id="duration">
-        <option value="5">5 menit</option>
-        <option value="10">10 menit</option>
-        <option value="15">15 menit</option>
-        <option value="20">20 menit</option>
-        <option value="25">25 menit</option>
-        <option value="30">30 menit</option>
-      </select>
+      <input type="number" id="duration" placeholder="Masukkan menit bebas..." min="1">
     </div>
+
     <div>
       <label for="topTextInput">Teks Atas</label>
       <input type="text" id="topTextInput" placeholder="Misal: Tim A - Presentasi Produk">
     </div>
+
     <div>
       <label for="bottomTextInput">Teks Bawah</label>
       <input type="text" id="bottomTextInput" placeholder="Misal: Waktu Tersisa">
     </div>
+
     <button id="startBtn">Mulai Timer</button>
   </div>
 
@@ -194,6 +155,7 @@ select:focus option:checked {
       <button id="exitBtn">Kembali</button>
     </div>
   </div>
+
 <script>
 const dashboard = document.getElementById("dashboard");
 const timerScreen = document.getElementById("timerScreen");
@@ -212,20 +174,27 @@ let paused = false;
 
 startBtn.onclick = () => {
   const mins = parseInt(document.getElementById("duration").value);
+
+  if (isNaN(mins) || mins <= 0) {
+    alert("Masukkan durasi minimal 1 menit!");
+    return;
+  }
+
   const topTextVal = document.getElementById("topTextInput").value || "";
   const bottomTextVal = document.getElementById("bottomTextInput").value || "";
 
   totalSeconds = mins * 60;
   topText.textContent = topTextVal;
   bottomText.textContent = bottomTextVal;
+
   timeDisplay.style.color = "var(--primary)";
   timeDisplay.style.textShadow = "0 0 40px var(--primary)";
-  timeDisplay.textContent = formatTime(totalSeconds);
   timeDisplay.style.animation = "none";
   warningShown = false;
   paused = false;
 
-  // Ganti layar
+  timeDisplay.textContent = formatTime(totalSeconds);
+
   dashboard.style.display = "none";
   timerScreen.style.display = "flex";
   controls.style.display = "flex";
@@ -237,8 +206,8 @@ function startCountdown() {
   clearInterval(countdown);
   countdown = setInterval(() => {
     if (paused) return;
-
     totalSeconds--;
+
     if (totalSeconds <= 0) {
       clearInterval(countdown);
       timeDisplay.textContent = "WAKTU HABIS";
@@ -247,7 +216,6 @@ function startCountdown() {
       return;
     }
 
-    // Peringatan merah jika sisa <= 2 menit
     if (totalSeconds <= 120 && !warningShown) {
       warningShown = true;
       timeDisplay.style.color = "var(--danger)";
@@ -264,7 +232,6 @@ function formatTime(sec) {
   return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
-// === Fullscreen ===
 function enterFullscreen() {
   if (!document.fullscreenElement) {
     timerScreen.requestFullscreen();
@@ -288,45 +255,34 @@ function goBackToDashboard() {
 fullscreenBtn.onclick = enterFullscreen;
 exitBtn.onclick = goBackToDashboard;
 
-// Event keluar fullscreen
 document.addEventListener("fullscreenchange", () => {
   if (!document.fullscreenElement) {
     controls.style.display = "flex";
   }
 });
 
-// === Keyboard Shortcuts ===
+// SHORTCUTS
 window.addEventListener("keydown", (e) => {
-  if (timerScreen.style.display !== "flex") return; // ignore kalau belum di layar timer
+  if (timerScreen.style.display !== "flex") return;
 
   if (e.code === "Space") {
     e.preventDefault();
     paused = !paused;
-    if (paused) {
-      bottomText.textContent = "⏸ Dihentikan sementara";
-    } else {
-      bottomText.textContent = "";
-    }
+    bottomText.textContent = paused ? "⏸ Dihentikan sementara" : "";
   }
 
-  // 🔥 Tekan F untuk toggle fullscreen
   if (e.code === "KeyF") {
     e.preventDefault();
-    if (!document.fullscreenElement) {
-      enterFullscreen();
-    } else {
-      exitFullscreen();
-    }
+    if (!document.fullscreenElement) enterFullscreen();
+    else exitFullscreen();
   }
 
-  // 🔥 Tekan K untuk kembali ke dashboard — tapi cuma kalau TIDAK fullscreen
   if (e.code === "KeyK" && !document.fullscreenElement) {
     e.preventDefault();
     goBackToDashboard();
   }
 });
 
-// === Tekan Enter di dashboard untuk langsung mulai ===
 dashboard.addEventListener("keydown", (e) => {
   if (e.code === "Enter") {
     e.preventDefault();
@@ -335,11 +291,5 @@ dashboard.addEventListener("keydown", (e) => {
 });
 </script>
 
-
-
 </body>
 </html>
-
-
-
-
